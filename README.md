@@ -1,36 +1,64 @@
 # MCP Gateway
 
-An API gateway for Model Context Protocol (MCP) servers. Provides authentication, authorization, rate limiting, and audit logging for upstream MCP services.
+A gateway that sits between AI agents and MCP servers, providing authentication, audit logging, role-based access control, and rate limiting. Built in Go.
 
-## Quick Start
+## Why this exists
+
+AI agents are increasingly connecting to real-world systems through MCP (Model Context Protocol). Banks, healthcare providers, and public sector organisations need to deploy these agents but can't do so without proper security controls and audit trails.
+
+This gateway acts as a checkpoint between the AI agent and the MCP server. Every request passes through it, gets authenticated, logged, and checked against permissions before being forwarded.
+
+## How it works
+
+
+The gateway receives MCP requests, validates the API key, checks permissions, logs everything to PostgreSQL, enforces rate limits, and then forwards the request to the upstream MCP server. Responses flow back the same way.
+
+## Tech stack
+
+- Go (standard library + chi router)
+- PostgreSQL for persistence
+- Docker for local development
+- sqlc for type-safe database queries
+- golangci-lint for code quality
+
+## Getting started
+
+Start PostgreSQL:
 
 ```bash
-# Start PostgreSQL
 docker compose up postgres -d
+```
 
-# Build and run
+Set the environment variables and run:
+
+```bash
 export DATABASE_URL="postgres://mcp:mcp_secret@localhost:5432/mcp_gateway?sslmode=disable"
+export UPSTREAM_URL="http://localhost:9090/mcp"
 make run
 ```
 
 ## Development
 
 ```bash
-make build       # Build the binary
-make test        # Run tests
-make lint        # Run linter
-make docker-up   # Start everything in Docker
-make docker-down # Stop Docker services
+make build        # compile the binary
+make test         # run tests
+make lint         # check code quality
+make docker-up    # start PostgreSQL
+make docker-down  # stop PostgreSQL
 ```
 
-## Configuration
+## Project status
 
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `8080` | Server listen port |
-| `DATABASE_URL` | (required) | PostgreSQL connection string |
-| `MIGRATIONS_PATH` | `migrations` | Path to SQL migration files |
+- [x] Project scaffolding
+- [x] Reference MCP server
+- [x] Core reverse proxy
+- [ ] API key authentication
+- [ ] Audit logging
+- [ ] Rate limiting
+- [ ] Role-based access control
+- [ ] Admin dashboard
+- [ ] Production deployment
 
-## Architecture
+## License
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for a detailed breakdown of the system design.
+MIT
