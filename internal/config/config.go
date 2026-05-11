@@ -11,6 +11,7 @@ type Config struct {
 	Port           int
 	DatabaseURL    string
 	MigrationsPath string
+	UpstreamURL    string
 }
 
 func Load() (*Config, error) {
@@ -23,9 +24,9 @@ func Load() (*Config, error) {
 		port = p
 	}
 
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		return nil, fmt.Errorf("DATABASE_URL is required")
+	upstreamURL := os.Getenv("UPSTREAM_URL")
+	if upstreamURL == "" {
+		return nil, fmt.Errorf("UPSTREAM_URL is required")
 	}
 
 	migrationsPath := os.Getenv("MIGRATIONS_PATH")
@@ -35,7 +36,8 @@ func Load() (*Config, error) {
 
 	return &Config{
 		Port:           port,
-		DatabaseURL:    dbURL,
+		DatabaseURL:    os.Getenv("DATABASE_URL"),
 		MigrationsPath: migrationsPath,
+		UpstreamURL:    upstreamURL,
 	}, nil
 }

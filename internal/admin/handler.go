@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
@@ -15,8 +17,8 @@ func NewHandler(db *sql.DB) *Handler {
 	return &Handler{db: db}
 }
 
-func (h *Handler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /admin/health", h.health)
+func (h *Handler) Register(r chi.Router) {
+	r.Get("/admin/health", h.health)
 }
 
 func (h *Handler) health(w http.ResponseWriter, r *http.Request) {

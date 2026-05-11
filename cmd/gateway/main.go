@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/Ali-jj99/mcp-gateway/internal/admin"
 	"github.com/Ali-jj99/mcp-gateway/internal/config"
 	"github.com/Ali-jj99/mcp-gateway/internal/database"
@@ -29,43 +31,47 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := database.Connect(cfg.DatabaseURL)
+	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	if cfg.DatabaseURL != "" {
+		db, err := database.Connect(cfg.DatabaseURL)
+		if err != nil {
+			slog.Error("failed to connect to database", "error", err)
+			os.Exit(1)
+		}
+		defer db.Close()
+
+		if err := database.Migrate(db, cfg.MigrationsPath); err != nil {
+			slog.Error("failed to run migrations", "error", err)
+			os.Exit(1)
+		}
+
+		adminHandler := admin.NewHandler(db)
+		adminHandler.Register(r)
+	} else {
+		slog.Warn("DATABASE_URL not set, admin endpoints disabled")
+	}
+
+	proxyHandler, err := proxy.NewHandler(cfg.UpstreamURL)
 	if err != nil {
-		slog.Error("failed to connect to database", "error", err)
+		slog.Error("failed to create proxy", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
-
-	if err := database.Migrate(db, cfg.MigrationsPath); err != nil {
-		slog.Error("failed to run migrations", "error", err)
-		os.Exit(1)
-	}
-
-	mux := http.NewServeMux()
-
-	adminHandler := admin.NewHandler(db)
-	adminHandler.Register(mux)
-
-	proxyHandler := proxy.NewHandler(db)
-	proxyHandler.Register(mux)
-
-	handler := middleware.Chain(
-		mux,
-		middleware.RequestID,
-		middleware.Logger,
-		middleware.Recoverer,
-	)
+	r.Post("/mcp", proxyHandler.ServeHTTP)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
-		Handler:      handler,
+		Handler:      r,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
 
 	go func() {
-		slog.Info("starting server", "port", cfg.Port)
+		slog.Info("starting gateway", "port", cfg.Port, "upstream", cfg.UpstreamURL)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
 			os.Exit(1)
