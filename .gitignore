@@ -1,0 +1,32 @@
+CLAUDE.md
+
+# Go
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+go.work
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+postgres-data/
+
+# Build
+dist/
+tmp/
