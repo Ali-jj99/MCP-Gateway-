@@ -28,10 +28,10 @@ type jsonrpcRequest struct {
 }
 
 type jsonrpcResponse struct {
-	JSONRPC string      `json:"jsonrpc"`
-	ID      any         `json:"id,omitempty"`
-	Result  any         `json:"result,omitempty"`
-	Error   *rpcError   `json:"error,omitempty"`
+	JSONRPC string    `json:"jsonrpc"`
+	ID      any       `json:"id,omitempty"`
+	Result  any       `json:"result,omitempty"`
+	Error   *rpcError `json:"error,omitempty"`
 }
 
 type rpcError struct {
@@ -205,7 +205,14 @@ func (s *server) handleMCP(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleInitialize(w http.ResponseWriter, req jsonrpcRequest) {
 	var params initializeParams
 	if req.Params != nil {
-		json.Unmarshal(req.Params, &params)
+		if err := json.Unmarshal(req.Params, &params); err != nil {
+			writeJSON(w, http.StatusBadRequest, jsonrpcResponse{
+				JSONRPC: "2.0",
+				ID:      req.ID,
+				Error:   &rpcError{Code: -32602, Message: "invalid initialize params"},
+			})
+			return
+		}
 	}
 
 	sessionID := generateSessionID()
@@ -291,7 +298,7 @@ func (s *server) handleToolsCall(w http.ResponseWriter, r *http.Request, req jso
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
+	_ = json.NewEncoder(w).Encode(v)
 }
 
 func main() {

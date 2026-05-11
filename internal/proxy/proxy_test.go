@@ -33,13 +33,13 @@ func newMCPServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
 		var req jsonrpcRequest
-		json.Unmarshal(body, &req)
+		_ = json.Unmarshal(body, &req)
 
 		switch req.Method {
 		case "initialize":
 			w.Header().Set("Mcp-Session-Id", sessionID)
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]any{
+			_ = json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      req.ID,
 				"result": map[string]any{
@@ -52,7 +52,7 @@ func newMCPServer() *httptest.Server {
 			w.WriteHeader(http.StatusAccepted)
 		case "tools/list":
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]any{
+			_ = json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      req.ID,
 				"result": map[string]any{
@@ -67,7 +67,7 @@ func newMCPServer() *httptest.Server {
 			})
 		case "tools/call":
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]any{
+			_ = json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      req.ID,
 				"result": map[string]any{
@@ -76,7 +76,7 @@ func newMCPServer() *httptest.Server {
 			})
 		default:
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]any{
+			_ = json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      req.ID,
 				"error":   map[string]any{"code": -32601, "message": "method not found"},
@@ -171,7 +171,9 @@ func TestProxyForwardsToolsList(t *testing.T) {
 			Name string `json:"name"`
 		} `json:"tools"`
 	}
-	json.Unmarshal(rpcResp.Result, &result)
+	if err := json.Unmarshal(rpcResp.Result, &result); err != nil {
+		t.Fatal(err)
+	}
 	if len(result.Tools) != 1 || result.Tools[0].Name != "echo" {
 		t.Fatalf("expected 1 tool named 'echo', got %+v", result.Tools)
 	}
@@ -204,7 +206,9 @@ func TestProxyForwardsToolsCall(t *testing.T) {
 			Text string `json:"text"`
 		} `json:"content"`
 	}
-	json.Unmarshal(rpcResp.Result, &result)
+	if err := json.Unmarshal(rpcResp.Result, &result); err != nil {
+		t.Fatal(err)
+	}
 	if len(result.Content) != 1 || result.Content[0].Text != "echoed" {
 		t.Fatalf("expected 'echoed', got %+v", result.Content)
 	}

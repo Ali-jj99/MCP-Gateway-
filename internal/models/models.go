@@ -4,14 +4,14 @@ package models
 import "time"
 
 type APIKey struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	KeyHash   string    `json:"-"`
-	KeyPrefix string    `json:"key_prefix"`
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	KeyHash   string     `json:"-"`
+	KeyPrefix string     `json:"key_prefix"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
-	Active    bool      `json:"active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Active    bool       `json:"active"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }
 
 type Role struct {
