@@ -15,10 +15,12 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/Ali-jj99/mcp-gateway/internal/admin"
+	"github.com/Ali-jj99/mcp-gateway/internal/auth"
 	"github.com/Ali-jj99/mcp-gateway/internal/config"
 	"github.com/Ali-jj99/mcp-gateway/internal/database"
 	"github.com/Ali-jj99/mcp-gateway/internal/middleware"
 	"github.com/Ali-jj99/mcp-gateway/internal/proxy"
+	"github.com/Ali-jj99/mcp-gateway/internal/store"
 )
 
 func main() {
@@ -36,6 +38,12 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	proxyHandler, err := proxy.NewHandler(cfg.UpstreamURL)
+	if err != nil {
+		slog.Error("failed to create proxy", "error", err)
+		os.Exit(1)
+	}
+
 	if cfg.DatabaseURL != "" {
 		db, err := database.Connect(cfg.DatabaseURL)
 		if err != nil {
@@ -51,16 +59,15 @@ func main() {
 
 		adminHandler := admin.NewHandler(db)
 		adminHandler.Register(r)
-	} else {
-		slog.Warn("DATABASE_URL not set, admin endpoints disabled")
-	}
 
-	proxyHandler, err := proxy.NewHandler(cfg.UpstreamURL)
-	if err != nil {
-		slog.Error("failed to create proxy", "error", err)
-		os.Exit(1)
+		q := store.New(db)
+		authService := auth.NewService(q)
+
+		r.With(authService.Middleware).Post("/mcp", proxyHandler.ServeHTTP)
+	} else {
+		slog.Warn("DATABASE_URL not set, auth disabled, admin endpoints disabled")
+		r.Post("/mcp", proxyHandler.ServeHTTP)
 	}
-	r.Post("/mcp", proxyHandler.ServeHTTP)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),

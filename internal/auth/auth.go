@@ -1,22 +1,42 @@
-// Package auth handles API key validation and permission checking.
+// Package auth handles API key generation, validation, and HTTP middleware.
 package auth
 
 import (
+	"context"
+	"crypto/rand"
 	"crypto/sha256"
-	"crypto/subtle"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"time"
 
-	"github.com/Ali-jj99/mcp-gateway/internal/models"
+	"github.com/Ali-jj99/mcp-gateway/internal/store"
+)
+
+const keyPrefix = "mcpgw_"
+
+var (
+	ErrMissingKey = errors.New("missing API key")
+	ErrInvalidKey = errors.New("invalid API key")
+	ErrExpiredKey = errors.New("expired API key")
+	ErrRevokedKey = errors.New("revoked API key")
 )
 
 type Service struct {
-	db *sql.DB
+	q store.Querier
 }
 
-func NewService(db *sql.DB) *Service {
-	return &Service{db: db}
+func NewService(q store.Querier) *Service {
+	return &Service{q: q}
+}
+
+func GenerateKey() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("generating random bytes: %w", err)
+	}
+	return keyPrefix + hex.EncodeToString(b), nil
 }
 
 func HashKey(plaintext string) string {
@@ -24,50 +44,54 @@ func HashKey(plaintext string) string {
 	return hex.EncodeToString(h[:])
 }
 
-func (s *Service) ValidateKey(key string) (*models.APIKey, error) {
-	hash := HashKey(key)
-
-	var apiKey models.APIKey
-	err := s.db.QueryRow(`
-		SELECT id, name, key_hash, key_prefix, expires_at, active, created_at, updated_at
-		FROM api_keys
-		WHERE key_hash = $1 AND active = true
-		AND (expires_at IS NULL OR expires_at > NOW())
-	`, hash).Scan(
-		&apiKey.ID, &apiKey.Name, &apiKey.KeyHash, &apiKey.KeyPrefix,
-		&apiKey.ExpiresAt, &apiKey.Active, &apiKey.CreatedAt, &apiKey.UpdatedAt,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("validating key: %w", err)
+func DisplayPrefix(plaintext string) string {
+	if len(plaintext) > 14 {
+		return plaintext[:14]
 	}
-
-	if subtle.ConstantTimeCompare([]byte(hash), []byte(apiKey.KeyHash)) != 1 {
-		return nil, fmt.Errorf("invalid key")
-	}
-
-	return &apiKey, nil
+	return plaintext
 }
 
-func (s *Service) GetPermissions(apiKeyID string) ([]models.Permission, error) {
-	rows, err := s.db.Query(`
-		SELECT p.id, p.role_id, p.resource, p.action
-		FROM permissions p
-		JOIN roles r ON r.id = p.role_id
-		JOIN api_key_roles akr ON akr.role_id = r.id
-		WHERE akr.api_key_id = $1
-	`, apiKeyID)
+func (s *Service) CreateKey(ctx context.Context, name string, expiresAt *time.Time) (string, store.ApiKey, error) {
+	plaintext, err := GenerateKey()
 	if err != nil {
-		return nil, fmt.Errorf("querying permissions: %w", err)
+		return "", store.ApiKey{}, err
 	}
-	defer rows.Close()
 
-	var perms []models.Permission
-	for rows.Next() {
-		var p models.Permission
-		if err := rows.Scan(&p.ID, &p.RoleID, &p.Resource, &p.Action); err != nil {
-			return nil, fmt.Errorf("scanning permission: %w", err)
-		}
-		perms = append(perms, p)
+	params := store.CreateAPIKeyParams{
+		Name:      name,
+		KeyHash:   HashKey(plaintext),
+		KeyPrefix: DisplayPrefix(plaintext),
 	}
-	return perms, rows.Err()
+	if expiresAt != nil {
+		params.ExpiresAt = sql.NullTime{Time: *expiresAt, Valid: true}
+	}
+
+	key, err := s.q.CreateAPIKey(ctx, params)
+	if err != nil {
+		return "", store.ApiKey{}, fmt.Errorf("inserting key: %w", err)
+	}
+
+	return plaintext, key, nil
+}
+
+func (s *Service) ValidateKey(ctx context.Context, plaintext string) (store.ApiKey, error) {
+	hash := HashKey(plaintext)
+
+	key, err := s.q.GetAPIKeyByHash(ctx, hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return store.ApiKey{}, ErrInvalidKey
+		}
+		return store.ApiKey{}, fmt.Errorf("looking up key: %w", err)
+	}
+
+	if !key.Active {
+		return store.ApiKey{}, ErrRevokedKey
+	}
+
+	if key.ExpiresAt.Valid && key.ExpiresAt.Time.Before(time.Now()) {
+		return store.ApiKey{}, ErrExpiredKey
+	}
+
+	return key, nil
 }
