@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"time"
 	"github.com/Ali-jj99/mcp-gateway/internal/store"
 )
 
@@ -8,30 +9,31 @@ templ KeysPage(keys []store.ListAPIKeysRow) {
 	@Layout("API Keys", "keys") {
 		<div class="flex items-center justify-between mb-8">
 			<div>
-				<h1 class="text-2xl font-bold text-gray-900">API Keys</h1>
-				<p class="mt-1 text-sm text-gray-500">Manage API keys for your MCP clients</p>
+				<h1 class="text-2xl font-bold text-gray-900 dark:text-white">API Keys</h1>
+				<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage API keys for your MCP clients</p>
 			</div>
 			<button
 				onclick="document.getElementById('create-form').classList.toggle('hidden')"
-				class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium"
+				class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-500 text-sm font-medium transition-colors shadow-sm"
 			>
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
 				Create Key
 			</button>
 		</div>
-		<div id="create-form" class="hidden bg-white rounded-lg shadow p-6 mb-6">
-			<h2 class="text-lg font-semibold text-gray-900 mb-4">Create New API Key</h2>
+		<div id="create-form" class="hidden bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-6 shadow-sm">
+			<h2 class="text-base font-semibold text-gray-900 dark:text-white mb-4">Create New API Key</h2>
 			<form hx-post="/dashboard/keys" hx-target="#keys-table" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div>
-						<label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-						<input type="text" id="name" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
+						<label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+						<input type="text" id="name" name="name" required placeholder="e.g. production-agent" class="w-full px-3.5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500"/>
 					</div>
 					<div>
-						<label for="expires" class="block text-sm font-medium text-gray-700 mb-1">Expires In (e.g. 720h, 0 for never)</label>
-						<input type="text" id="expires" name="expires" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
+						<label for="expires" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Expires In</label>
+						<input type="text" id="expires" name="expires" placeholder="e.g. 720h, 0 for never" class="w-full px-3.5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500"/>
 					</div>
 				</div>
-				<button type="submit" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium">Create</button>
+				<button type="submit" class="mt-4 bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-500 text-sm font-medium transition-colors">Create</button>
 			</form>
 			<div id="new-key-display"></div>
 		</div>
@@ -42,25 +44,28 @@ templ KeysPage(keys []store.ListAPIKeysRow) {
 }
 
 templ KeysTable(keys []store.ListAPIKeysRow) {
-	<div id="keys-table" class="bg-white shadow rounded-lg overflow-hidden">
-		<table class="min-w-full divide-y divide-gray-200">
-			<thead class="bg-gray-50">
-				<tr>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key Prefix</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-					<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+	<div id="keys-table" class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+		<table class="min-w-full">
+			<thead>
+				<tr class="border-b border-gray-200 dark:border-gray-800">
+					<th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Name</th>
+					<th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Key Prefix</th>
+					<th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+					<th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Expires</th>
+					<th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Created</th>
+					<th class="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
 				</tr>
 			</thead>
-			<tbody class="bg-white divide-y divide-gray-200">
-				for _, k := range keys {
-					@keyRow(k)
+			<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+				for i, k := range keys {
+					@keyRow(k, i)
 				}
 				if len(keys) == 0 {
 					<tr>
-						<td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">No API keys found</td>
+						<td colspan="6" class="px-6 py-12 text-center">
+							<svg class="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+							<p class="text-sm text-gray-500 dark:text-gray-400">No API keys found</p>
+						</td>
 					</tr>
 				}
 			</tbody>
@@ -68,33 +73,29 @@ templ KeysTable(keys []store.ListAPIKeysRow) {
 	</div>
 }
 
-templ keyRow(k store.ListAPIKeysRow) {
-	<tr>
-		<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ k.Name }</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{ k.KeyPrefix }...</td>
+templ keyRow(k store.ListAPIKeysRow, idx int) {
+	<tr class={ "transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50", templ.KV("bg-gray-50/50 dark:bg-gray-800/20", idx%2 == 1) }>
+		<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{ k.Name }</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">{ k.KeyPrefix }...</td>
 		<td class="px-6 py-4 whitespace-nowrap">
-			if k.Active {
-				<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-			} else {
-				<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Revoked</span>
-			}
+			@keyStatusBadge(k)
 		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
 			if k.ExpiresAt.Valid {
 				{ k.ExpiresAt.Time.Format("2006-01-02 15:04") }
 			} else {
-				Never
+				<span class="text-gray-400 dark:text-gray-500">Never</span>
 			}
 		</td>
-		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ k.CreatedAt.Format("2006-01-02 15:04") }</td>
-		<td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{ k.CreatedAt.Format("2006-01-02 15:04") }</td>
+		<td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
 			if k.Active {
 				<button
 					hx-post={ "/dashboard/keys/" + k.ID.String() + "/revoke" }
 					hx-target="#keys-table"
 					hx-swap="outerHTML"
 					hx-confirm="Revoke this API key?"
-					class="text-yellow-600 hover:text-yellow-900 font-medium mr-3"
+					class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 font-medium transition-colors"
 				>Revoke</button>
 			}
 			<button
@@ -102,15 +103,39 @@ templ keyRow(k store.ListAPIKeysRow) {
 				hx-target="#keys-table"
 				hx-swap="outerHTML"
 				hx-confirm="Permanently delete this API key?"
-				class="text-red-600 hover:text-red-900 font-medium"
+				class="inline-flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium transition-colors"
 			>Delete</button>
 		</td>
 	</tr>
 }
 
+templ keyStatusBadge(k store.ListAPIKeysRow) {
+	if !k.Active {
+		<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-200 dark:ring-red-500/20">
+			<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+			Revoked
+		</span>
+	} else if k.ExpiresAt.Valid && k.ExpiresAt.Time.Before(time.Now()) {
+		<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-200 dark:ring-amber-500/20">
+			<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+			Expired
+		</span>
+	} else {
+		<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-200 dark:ring-emerald-500/20">
+			<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+			Active
+		</span>
+	}
+}
+
 templ NewKeyBanner(plaintext string) {
-	<div class="bg-green-50 border border-green-200 rounded-md p-4 mt-4">
-		<p class="text-sm font-medium text-green-800 mb-1">API key created. Copy it now — it won't be shown again.</p>
-		<code class="block bg-green-100 rounded px-3 py-2 text-sm font-mono text-green-900 break-all select-all">{ plaintext }</code>
+	<div class="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg p-4 mt-4">
+		<div class="flex items-start gap-3">
+			<svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+			<div class="flex-1 min-w-0">
+				<p class="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-1.5">API key created. Copy it now — it won't be shown again.</p>
+				<code class="block bg-emerald-100 dark:bg-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm font-mono text-emerald-900 dark:text-emerald-300 break-all select-all border border-emerald-200 dark:border-emerald-500/20">{ plaintext }</code>
+			</div>
+		</div>
 	</div>
 }

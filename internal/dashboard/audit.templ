@@ -15,21 +15,21 @@ type AuditFilter struct {
 templ AuditPage(logs []store.ListAuditLogsRow, f AuditFilter) {
 	@Layout("Audit Logs", "audit") {
 		<div class="mb-8">
-			<h1 class="text-2xl font-bold text-gray-900">Audit Logs</h1>
-			<p class="mt-1 text-sm text-gray-500">View all proxied requests</p>
+			<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Audit Logs</h1>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View all proxied requests</p>
 		</div>
-		<div class="bg-white rounded-lg shadow p-4 mb-6">
+		<div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-6 shadow-sm">
 			<form hx-get="/dashboard/audit/results" hx-target="#audit-results" hx-swap="outerHTML" class="flex flex-wrap items-end gap-4">
 				<div>
-					<label class="block text-xs font-medium text-gray-500 mb-1">Tool Name</label>
-					<input type="text" name="tool_name" value={ f.ToolName } placeholder="e.g. read_file" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+					<label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Tool Name</label>
+					<input type="text" name="tool_name" value={ f.ToolName } placeholder="e.g. read_file" class="px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500"/>
 				</div>
 				<div>
-					<label class="block text-xs font-medium text-gray-500 mb-1">Status Code</label>
-					<input type="text" name="status_code" value={ f.StatusCode } placeholder="e.g. 200" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-24"/>
+					<label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Status Code</label>
+					<input type="text" name="status_code" value={ f.StatusCode } placeholder="e.g. 200" class="px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-24 placeholder-gray-400 dark:placeholder-gray-500"/>
 				</div>
-				<button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium">Search</button>
-				<a href="/dashboard/audit" class="text-sm text-gray-500 hover:text-gray-700 py-2">Clear</a>
+				<button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-500 text-sm font-medium transition-colors">Search</button>
+				<a href="/dashboard/audit" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 py-2 transition-colors">Clear</a>
 			</form>
 		</div>
 		<div id="audit-results">
@@ -40,41 +40,44 @@ templ AuditPage(logs []store.ListAuditLogsRow, f AuditFilter) {
 
 templ AuditResults(logs []store.ListAuditLogsRow, f AuditFilter) {
 	<div id="audit-results">
-		<div class="bg-white shadow rounded-lg overflow-hidden">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
-					<tr>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tool</th>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latency</th>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+		<div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+			<table class="min-w-full">
+				<thead>
+					<tr class="border-b border-gray-200 dark:border-gray-800">
+						<th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Time</th>
+						<th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Tool</th>
+						<th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+						<th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Latency</th>
+						<th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">IP</th>
+						<th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Method</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
-					for _, log := range logs {
-						@auditRow(log)
+				<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+					for i, log := range logs {
+						@auditRow(log, i)
 					}
 					if len(logs) == 0 {
 						<tr>
-							<td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">No audit logs found</td>
+							<td colspan="6" class="px-5 py-12 text-center">
+								<svg class="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+								<p class="text-sm text-gray-500 dark:text-gray-400">No audit logs found</p>
+							</td>
 						</tr>
 					}
 				</tbody>
 			</table>
 		</div>
 		<div class="mt-4 flex items-center justify-between">
-			<div class="text-sm text-gray-500">
+			<div class="text-sm text-gray-500 dark:text-gray-400">
 				Page { fmt.Sprintf("%d", f.Page) }
 			</div>
-			<div class="flex space-x-2">
+			<div class="flex gap-2">
 				if f.Page > 1 {
 					<button
 						hx-get={ auditPageURL(f, f.Page-1) }
 						hx-target="#audit-results"
 						hx-swap="outerHTML"
-						class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+						class="px-3.5 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
 					>Previous</button>
 				}
 				if f.HasMore {
@@ -82,7 +85,7 @@ templ AuditResults(logs []store.ListAuditLogsRow, f AuditFilter) {
 						hx-get={ auditPageURL(f, f.Page+1) }
 						hx-target="#audit-results"
 						hx-swap="outerHTML"
-						class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+						class="px-3.5 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
 					>Next</button>
 				}
 			</div>
@@ -101,31 +104,40 @@ func auditPageURL(f AuditFilter, page int) string {
 	return u
 }
 
-templ auditRow(log store.ListAuditLogsRow) {
-	<tr>
-		<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{ log.CreatedAt.Format("01-02 15:04:05") }</td>
-		<td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-900">
+templ auditRow(log store.ListAuditLogsRow, idx int) {
+	<tr class={ "transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50", templ.KV("bg-gray-50/50 dark:bg-gray-800/20", idx%2 == 1) }>
+		<td class="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{ log.CreatedAt.Format("01-02 15:04:05") }</td>
+		<td class="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">
 			if log.ToolName != "" {
 				{ log.ToolName }
 			} else {
-				<span class="text-gray-400">-</span>
+				<span class="text-gray-300 dark:text-gray-600">-</span>
 			}
 		</td>
-		<td class="px-4 py-3 whitespace-nowrap">
+		<td class="px-5 py-3.5 whitespace-nowrap">
 			@statusBadge(int(log.StatusCode))
 		</td>
-		<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{ fmt.Sprintf("%dms", log.LatencyMs) }</td>
-		<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">{ log.Ip }</td>
-		<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{ log.Action }</td>
+		<td class="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{ fmt.Sprintf("%dms", log.LatencyMs) }</td>
+		<td class="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">{ log.Ip }</td>
+		<td class="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{ log.Action }</td>
 	</tr>
 }
 
 templ statusBadge(code int) {
 	if code < 300 {
-		<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{ fmt.Sprintf("%d", code) }</span>
+		<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-200 dark:ring-emerald-500/20">
+			<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+			{ fmt.Sprintf("%d", code) }
+		</span>
 	} else if code < 400 {
-		<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">{ fmt.Sprintf("%d", code) }</span>
+		<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-200 dark:ring-amber-500/20">
+			<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+			{ fmt.Sprintf("%d", code) }
+		</span>
 	} else {
-		<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">{ fmt.Sprintf("%d", code) }</span>
+		<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-200 dark:ring-red-500/20">
+			<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+			{ fmt.Sprintf("%d", code) }
+		</span>
 	}
 }

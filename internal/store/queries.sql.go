@@ -74,6 +74,44 @@ func (q *Queries) CountErrorsToday(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countRequestsByHour = `-- name: CountRequestsByHour :many
+SELECT
+    EXTRACT(EPOCH FROM date_trunc('hour', created_at))::BIGINT AS hour_epoch,
+    COUNT(*)::BIGINT AS count
+FROM audit_logs
+WHERE created_at >= NOW() - INTERVAL '24 hours'
+GROUP BY hour_epoch
+ORDER BY hour_epoch
+`
+
+type CountRequestsByHourRow struct {
+	HourEpoch int64 `json:"hour_epoch"`
+	Count     int64 `json:"count"`
+}
+
+func (q *Queries) CountRequestsByHour(ctx context.Context) ([]CountRequestsByHourRow, error) {
+	rows, err := q.db.QueryContext(ctx, countRequestsByHour)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountRequestsByHourRow
+	for rows.Next() {
+		var i CountRequestsByHourRow
+		if err := rows.Scan(&i.HourEpoch, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const countRequestsToday = `-- name: CountRequestsToday :one
 SELECT COUNT(*) FROM audit_logs WHERE created_at >= CURRENT_DATE
 `

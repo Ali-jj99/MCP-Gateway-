@@ -138,3 +138,12 @@ DELETE FROM policies WHERE id = $1;
 -- name: TogglePolicy :exec
 UPDATE policies SET enabled = NOT enabled, updated_at = NOW()
 WHERE id = $1;
+
+-- name: CountRequestsByHour :many
+SELECT
+    EXTRACT(EPOCH FROM date_trunc('hour', created_at))::BIGINT AS hour_epoch,
+    COUNT(*)::BIGINT AS count
+FROM audit_logs
+WHERE created_at >= NOW() - INTERVAL '24 hours'
+GROUP BY hour_epoch
+ORDER BY hour_epoch;

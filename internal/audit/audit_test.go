@@ -109,6 +109,9 @@ func (m *mockQuerier) UpdatePolicy(_ context.Context, _ store.UpdatePolicyParams
 }
 func (m *mockQuerier) DeletePolicy(_ context.Context, _ uuid.UUID) error { return nil }
 func (m *mockQuerier) TogglePolicy(_ context.Context, _ uuid.UUID) error { return nil }
+func (m *mockQuerier) CountRequestsByHour(_ context.Context) ([]store.CountRequestsByHourRow, error) {
+	return nil, nil
+}
 
 // --- Async behavior tests ---
 

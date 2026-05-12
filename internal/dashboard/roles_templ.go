@@ -50,7 +50,7 @@ func RolesPage(roles []RoleWithPerms) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex items-center justify-between mb-8\"><div><h1 class=\"text-2xl font-bold text-gray-900\">Roles & Permissions</h1><p class=\"mt-1 text-sm text-gray-500\">Manage RBAC roles and their permissions</p></div><button onclick=\"document.getElementById('create-role-form').classList.toggle('hidden')\" class=\"bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium\">Create Role</button></div><div id=\"create-role-form\" class=\"hidden bg-white rounded-lg shadow p-6 mb-6\"><h2 class=\"text-lg font-semibold text-gray-900 mb-4\">Create New Role</h2><form hx-post=\"/dashboard/roles\" hx-target=\"#roles-list\" hx-swap=\"outerHTML\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Name</label> <input type=\"text\" name=\"name\" required class=\"w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Description</label> <input type=\"text\" name=\"description\" class=\"w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><button type=\"submit\" class=\"mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium\">Create</button></form></div><div id=\"roles-list\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex items-center justify-between mb-8\"><div><h1 class=\"text-2xl font-bold text-gray-900 dark:text-white\">Roles & Permissions</h1><p class=\"mt-1 text-sm text-gray-500 dark:text-gray-400\">Manage RBAC roles and their permissions</p></div><button onclick=\"document.getElementById('create-role-form').classList.toggle('hidden')\" class=\"inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-500 text-sm font-medium transition-colors shadow-sm\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg> Create Role</button></div><div id=\"create-role-form\" class=\"hidden bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-6 shadow-sm\"><h2 class=\"text-base font-semibold text-gray-900 dark:text-white mb-4\">Create New Role</h2><form hx-post=\"/dashboard/roles\" hx-target=\"#roles-list\" hx-swap=\"outerHTML\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div><label class=\"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5\">Name</label> <input type=\"text\" name=\"name\" required placeholder=\"e.g. reader\" class=\"w-full px-3.5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5\">Description</label> <input type=\"text\" name=\"description\" placeholder=\"Optional description\" class=\"w-full px-3.5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500\"></div></div><button type=\"submit\" class=\"mt-4 bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-500 text-sm font-medium transition-colors\">Create</button></form></div><div id=\"roles-list\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -104,7 +104,7 @@ func RolesList(roles []RoleWithPerms) templ.Component {
 			}
 		}
 		if len(roles) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"bg-white rounded-lg shadow p-8 text-center text-sm text-gray-500\">No roles defined</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center shadow-sm\"><svg class=\"w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z\"></path></svg><p class=\"text-sm text-gray-500 dark:text-gray-400\">No roles defined</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -138,14 +138,14 @@ func roleCard(rp RoleWithPerms) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"bg-white rounded-lg shadow\"><div class=\"px-6 py-4 flex items-center justify-between border-b border-gray-100\"><div><h3 class=\"text-lg font-semibold text-gray-900\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden\"><div class=\"px-6 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-800\"><div class=\"flex items-center gap-3\"><div class=\"w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z\"></path></svg></div><div><h3 class=\"text-base font-semibold text-gray-900 dark:text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(rp.Role.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 63, Col: 66}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 71, Col: 85}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -156,14 +156,14 @@ func roleCard(rp RoleWithPerms) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if rp.Role.Description != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<p class=\"text-sm text-gray-500\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<p class=\"text-sm text-gray-500 dark:text-gray-400\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(rp.Role.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 65, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 73, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -174,14 +174,14 @@ func roleCard(rp RoleWithPerms) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><button hx-delete=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></div><button hx-delete=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue("/dashboard/roles/" + rp.Role.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 69, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 78, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 		if templ_7745c5c3_Err != nil {
@@ -194,26 +194,26 @@ func roleCard(rp RoleWithPerms) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue("Delete role '" + rp.Role.Name + "' and all its permissions?")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 72, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 81, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" class=\"text-red-600 hover:text-red-900 text-sm font-medium\">Delete Role</button></div><div class=\"px-6 py-4\"><div class=\"flex items-center justify-between mb-3\"><h4 class=\"text-sm font-medium text-gray-700\">Permissions</h4></div><form hx-post=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" class=\"text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium transition-colors\">Delete</button></div><div class=\"px-6 py-4\"><form hx-post=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue("/dashboard/roles/" + rp.Role.ID.String() + "/permissions")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 80, Col: 77}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 86, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" hx-target=\"#roles-list\" hx-swap=\"outerHTML\" class=\"flex items-end gap-3 mb-4\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div class=\"flex-1\"><label class=\"block text-xs text-gray-500 mb-1\">Resource pattern</label> <input type=\"text\" name=\"resource\" required placeholder=\"tool:read_*\" class=\"w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500\"></div><div class=\"w-32\"><label class=\"block text-xs text-gray-500 mb-1\">Action</label> <input type=\"text\" name=\"action\" required placeholder=\"execute\" class=\"w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500\"></div><button type=\"submit\" class=\"bg-gray-800 text-white px-3 py-1.5 rounded-md hover:bg-gray-900 text-sm font-medium\">Add</button></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" hx-target=\"#roles-list\" hx-swap=\"outerHTML\" class=\"flex items-end gap-3 mb-4\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><div class=\"flex-1\"><label class=\"block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1\">Resource</label> <input type=\"text\" name=\"resource\" required placeholder=\"tool:read_*\" class=\"w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 dark:placeholder-gray-500\"></div><div class=\"w-32\"><label class=\"block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1\">Action</label> <input type=\"text\" name=\"action\" required placeholder=\"execute\" class=\"w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 dark:placeholder-gray-500\"></div><button type=\"submit\" class=\"bg-gray-900 dark:bg-gray-700 text-white px-3.5 py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 text-sm font-medium transition-colors\">Add</button></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -233,7 +233,7 @@ func roleCard(rp RoleWithPerms) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<p class=\"text-sm text-gray-400\">No permissions defined</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<p class=\"text-sm text-gray-400 dark:text-gray-500\">No permissions defined</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -267,27 +267,27 @@ func permTag(p store.Permission) templ.Component {
 			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<span class=\"inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 rounded-full px-3 py-1 text-sm\"><span class=\"font-mono\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<span class=\"inline-flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-lg px-3 py-1.5 text-sm ring-1 ring-inset ring-indigo-200 dark:ring-indigo-500/20\"><span class=\"font-mono text-xs\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(p.Resource)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 106, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 112, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</span> <span class=\"text-indigo-400\">:</span> <span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</span> <span class=\"text-indigo-300 dark:text-indigo-600\">:</span> <span class=\"text-xs\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(p.Action)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 108, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 114, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -300,13 +300,13 @@ func permTag(p store.Permission) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue("/dashboard/permissions/" + p.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 110, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/dashboard/roles.templ`, Line: 116, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" hx-target=\"#roles-list\" hx-swap=\"outerHTML\" class=\"ml-1 text-indigo-400 hover:text-red-600\">&times;</button></span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" hx-target=\"#roles-list\" hx-swap=\"outerHTML\" class=\"ml-0.5 text-indigo-400 dark:text-indigo-500 hover:text-red-600 dark:hover:text-red-400 transition-colors\">&times;</button></span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

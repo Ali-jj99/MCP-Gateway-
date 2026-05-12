@@ -52,6 +52,7 @@ func (s *Server) routes() {
 		r.Use(s.requireAuth)
 		r.Get("/dashboard", s.handleHome)
 		r.Get("/dashboard/stats", s.handleStats)
+		r.Get("/dashboard/chart-data", s.handleChartData)
 
 		r.Get("/dashboard/keys", s.handleKeys)
 		r.Post("/dashboard/keys", s.handleCreateKey)
@@ -381,4 +382,31 @@ func (s *Server) handleDeletePolicy(w http.ResponseWriter, r *http.Request) {
 	_ = s.q.DeletePolicy(r.Context(), id)
 	policies, _ := s.q.ListPolicies(r.Context())
 	render(w, r, PoliciesList(policies))
+}
+
+// --- Chart data ---
+
+func (s *Server) handleChartData(w http.ResponseWriter, r *http.Request) {
+	rows, _ := s.q.CountRequestsByHour(r.Context())
+
+	now := time.Now().UTC().Truncate(time.Hour)
+	labels := make([]string, 24)
+	data := make([]int64, 24)
+
+	lookup := make(map[int64]int64, len(rows))
+	for _, row := range rows {
+		lookup[row.HourEpoch] = row.Count
+	}
+
+	for i := range 24 {
+		t := now.Add(-time.Duration(23-i) * time.Hour)
+		labels[i] = t.Format("15:04")
+		data[i] = lookup[t.Unix()]
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"labels": labels,
+		"data":   data,
+	})
 }

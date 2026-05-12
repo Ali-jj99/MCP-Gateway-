@@ -15,6 +15,7 @@ type Querier interface {
 	AssignRoleToKey(ctx context.Context, arg AssignRoleToKeyParams) error
 	CountActiveKeys(ctx context.Context) (int64, error)
 	CountErrorsToday(ctx context.Context) (int64, error)
+	CountRequestsByHour(ctx context.Context) ([]CountRequestsByHourRow, error)
 	CountRequestsToday(ctx context.Context) (int64, error)
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (ApiKey, error)
 	CreatePolicy(ctx context.Context, arg CreatePolicyParams) (Policy, error)
