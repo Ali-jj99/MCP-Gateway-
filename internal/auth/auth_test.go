@@ -123,6 +123,9 @@ func (m *mockQuerier) ListRolesForKey(_ context.Context, _ uuid.UUID) ([]store.R
 func (m *mockQuerier) GetPermissionsByKeyID(_ context.Context, _ uuid.UUID) ([]store.GetPermissionsByKeyIDRow, error) {
 	return nil, nil
 }
+func (m *mockQuerier) CountActiveKeys(_ context.Context) (int64, error)    { return 0, nil }
+func (m *mockQuerier) CountRequestsToday(_ context.Context) (int64, error) { return 0, nil }
+func (m *mockQuerier) CountErrorsToday(_ context.Context) (int64, error)   { return 0, nil }
 
 func (m *mockQuerier) setExpired(hash string) {
 	if k, ok := m.keys[hash]; ok {

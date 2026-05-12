@@ -13,6 +13,9 @@ import (
 type Querier interface {
 	AddPermission(ctx context.Context, arg AddPermissionParams) (Permission, error)
 	AssignRoleToKey(ctx context.Context, arg AssignRoleToKeyParams) error
+	CountActiveKeys(ctx context.Context) (int64, error)
+	CountErrorsToday(ctx context.Context) (int64, error)
+	CountRequestsToday(ctx context.Context) (int64, error)
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (ApiKey, error)
 	CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error)
 	DeleteAPIKey(ctx context.Context, id uuid.UUID) error

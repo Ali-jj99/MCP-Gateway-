@@ -51,6 +51,39 @@ func (q *Queries) AssignRoleToKey(ctx context.Context, arg AssignRoleToKeyParams
 	return err
 }
 
+const countActiveKeys = `-- name: CountActiveKeys :one
+SELECT COUNT(*) FROM api_keys WHERE active = true
+`
+
+func (q *Queries) CountActiveKeys(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActiveKeys)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countErrorsToday = `-- name: CountErrorsToday :one
+SELECT COUNT(*) FROM audit_logs WHERE created_at >= CURRENT_DATE AND status_code >= 400
+`
+
+func (q *Queries) CountErrorsToday(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countErrorsToday)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countRequestsToday = `-- name: CountRequestsToday :one
+SELECT COUNT(*) FROM audit_logs WHERE created_at >= CURRENT_DATE
+`
+
+func (q *Queries) CountRequestsToday(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRequestsToday)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createAPIKey = `-- name: CreateAPIKey :one
 INSERT INTO api_keys (name, key_hash, key_prefix, expires_at)
 VALUES ($1, $2, $3, $4)

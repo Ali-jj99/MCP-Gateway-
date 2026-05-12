@@ -76,6 +76,10 @@ func (s *Service) loadPermissions(ctx context.Context, keyID uuid.UUID) []store.
 	}
 
 	s.mu.Lock()
+	if cached, ok := s.cache[keyID]; ok {
+		s.mu.Unlock()
+		return cached
+	}
 	s.cache[keyID] = perms
 	s.mu.Unlock()
 	return perms

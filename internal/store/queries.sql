@@ -84,6 +84,15 @@ FROM permissions p
 JOIN api_key_roles akr ON akr.role_id = p.role_id
 WHERE akr.api_key_id = $1;
 
+-- name: CountActiveKeys :one
+SELECT COUNT(*) FROM api_keys WHERE active = true;
+
+-- name: CountRequestsToday :one
+SELECT COUNT(*) FROM audit_logs WHERE created_at >= CURRENT_DATE;
+
+-- name: CountErrorsToday :one
+SELECT COUNT(*) FROM audit_logs WHERE created_at >= CURRENT_DATE AND status_code >= 400;
+
 -- name: ListAuditLogs :many
 SELECT id, api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name, created_at
 FROM audit_logs
