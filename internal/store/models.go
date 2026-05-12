@@ -55,6 +55,7 @@ type RateLimit struct {
 	RequestsPerMin  int32     `json:"requests_per_min"`
 	RequestsPerHour int32     `json:"requests_per_hour"`
 	RequestsPerDay  int32     `json:"requests_per_day"`
+	BurstSize       int32     `json:"burst_size"`
 }
 
 type Role struct {

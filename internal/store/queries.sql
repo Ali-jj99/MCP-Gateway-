@@ -24,6 +24,18 @@ DELETE FROM api_keys WHERE id = $1;
 INSERT INTO audit_logs (api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
+-- name: GetRateLimitByKeyID :one
+SELECT id, api_key_id, requests_per_min, burst_size
+FROM rate_limits
+WHERE api_key_id = $1;
+
+-- name: UpsertRateLimit :one
+INSERT INTO rate_limits (api_key_id, requests_per_min, burst_size)
+VALUES ($1, $2, $3)
+ON CONFLICT (api_key_id)
+DO UPDATE SET requests_per_min = EXCLUDED.requests_per_min, burst_size = EXCLUDED.burst_size
+RETURNING id, api_key_id, requests_per_min, burst_size;
+
 -- name: ListAuditLogs :many
 SELECT id, api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name, created_at
 FROM audit_logs

@@ -78,6 +78,31 @@ func (q *Queries) GetAPIKeyByHash(ctx context.Context, keyHash string) (ApiKey, 
 	return i, err
 }
 
+const getRateLimitByKeyID = `-- name: GetRateLimitByKeyID :one
+SELECT id, api_key_id, requests_per_min, burst_size
+FROM rate_limits
+WHERE api_key_id = $1
+`
+
+type GetRateLimitByKeyIDRow struct {
+	ID             uuid.UUID `json:"id"`
+	ApiKeyID       uuid.UUID `json:"api_key_id"`
+	RequestsPerMin int32     `json:"requests_per_min"`
+	BurstSize      int32     `json:"burst_size"`
+}
+
+func (q *Queries) GetRateLimitByKeyID(ctx context.Context, apiKeyID uuid.UUID) (GetRateLimitByKeyIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getRateLimitByKeyID, apiKeyID)
+	var i GetRateLimitByKeyIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.ApiKeyID,
+		&i.RequestsPerMin,
+		&i.BurstSize,
+	)
+	return i, err
+}
+
 const insertAuditLog = `-- name: InsertAuditLog :exec
 INSERT INTO audit_logs (api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -243,4 +268,37 @@ WHERE id = $1
 func (q *Queries) RevokeAPIKey(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, revokeAPIKey, id)
 	return err
+}
+
+const upsertRateLimit = `-- name: UpsertRateLimit :one
+INSERT INTO rate_limits (api_key_id, requests_per_min, burst_size)
+VALUES ($1, $2, $3)
+ON CONFLICT (api_key_id)
+DO UPDATE SET requests_per_min = EXCLUDED.requests_per_min, burst_size = EXCLUDED.burst_size
+RETURNING id, api_key_id, requests_per_min, burst_size
+`
+
+type UpsertRateLimitParams struct {
+	ApiKeyID       uuid.UUID `json:"api_key_id"`
+	RequestsPerMin int32     `json:"requests_per_min"`
+	BurstSize      int32     `json:"burst_size"`
+}
+
+type UpsertRateLimitRow struct {
+	ID             uuid.UUID `json:"id"`
+	ApiKeyID       uuid.UUID `json:"api_key_id"`
+	RequestsPerMin int32     `json:"requests_per_min"`
+	BurstSize      int32     `json:"burst_size"`
+}
+
+func (q *Queries) UpsertRateLimit(ctx context.Context, arg UpsertRateLimitParams) (UpsertRateLimitRow, error) {
+	row := q.db.QueryRowContext(ctx, upsertRateLimit, arg.ApiKeyID, arg.RequestsPerMin, arg.BurstSize)
+	var i UpsertRateLimitRow
+	err := row.Scan(
+		&i.ID,
+		&i.ApiKeyID,
+		&i.RequestsPerMin,
+		&i.BurstSize,
+	)
+	return i, err
 }

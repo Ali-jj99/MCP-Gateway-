@@ -60,6 +60,12 @@ func (m *mockQuerier) ListAuditLogs(_ context.Context, _ store.ListAuditLogsPara
 	return nil, nil
 }
 func (m *mockQuerier) RevokeAPIKey(_ context.Context, _ uuid.UUID) error { return nil }
+func (m *mockQuerier) GetRateLimitByKeyID(_ context.Context, _ uuid.UUID) (store.GetRateLimitByKeyIDRow, error) {
+	return store.GetRateLimitByKeyIDRow{}, sql.ErrNoRows
+}
+func (m *mockQuerier) UpsertRateLimit(_ context.Context, _ store.UpsertRateLimitParams) (store.UpsertRateLimitRow, error) {
+	return store.UpsertRateLimitRow{}, nil
+}
 
 // --- Async behavior tests ---
 

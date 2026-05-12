@@ -14,10 +14,12 @@ type Querier interface {
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (ApiKey, error)
 	DeleteAPIKey(ctx context.Context, id uuid.UUID) error
 	GetAPIKeyByHash(ctx context.Context, keyHash string) (ApiKey, error)
+	GetRateLimitByKeyID(ctx context.Context, apiKeyID uuid.UUID) (GetRateLimitByKeyIDRow, error)
 	InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error
 	ListAPIKeys(ctx context.Context) ([]ListAPIKeysRow, error)
 	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error)
 	RevokeAPIKey(ctx context.Context, id uuid.UUID) error
+	UpsertRateLimit(ctx context.Context, arg UpsertRateLimitParams) (UpsertRateLimitRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

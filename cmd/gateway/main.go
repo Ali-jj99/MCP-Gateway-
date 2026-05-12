@@ -21,6 +21,7 @@ import (
 	"github.com/Ali-jj99/mcp-gateway/internal/database"
 	"github.com/Ali-jj99/mcp-gateway/internal/middleware"
 	"github.com/Ali-jj99/mcp-gateway/internal/proxy"
+	"github.com/Ali-jj99/mcp-gateway/internal/ratelimit"
 	"github.com/Ali-jj99/mcp-gateway/internal/store"
 )
 
@@ -67,7 +68,9 @@ func main() {
 		auditLogger := audit.NewLogger(q, 4096)
 		defer auditLogger.Close()
 
-		r.With(authService.Middleware, auditLogger.Middleware).Post("/mcp", proxyHandler.ServeHTTP)
+		rateLimiter := ratelimit.NewLimiter(q, ratelimit.DefaultConfig)
+
+		r.With(authService.Middleware, rateLimiter.Middleware, auditLogger.Middleware).Post("/mcp", proxyHandler.ServeHTTP)
 	} else {
 		slog.Warn("DATABASE_URL not set, auth disabled, admin endpoints disabled")
 		r.Post("/mcp", proxyHandler.ServeHTTP)

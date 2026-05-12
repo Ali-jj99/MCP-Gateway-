@@ -1,0 +1,1 @@
+ALTER TABLE rate_limits ADD COLUMN burst_size INT NOT NULL DEFAULT 10;
