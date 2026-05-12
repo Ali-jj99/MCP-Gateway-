@@ -66,6 +66,33 @@ func (m *mockQuerier) GetRateLimitByKeyID(_ context.Context, _ uuid.UUID) (store
 func (m *mockQuerier) UpsertRateLimit(_ context.Context, _ store.UpsertRateLimitParams) (store.UpsertRateLimitRow, error) {
 	return store.UpsertRateLimitRow{}, nil
 }
+func (m *mockQuerier) CreateRole(_ context.Context, _ store.CreateRoleParams) (store.Role, error) {
+	return store.Role{}, nil
+}
+func (m *mockQuerier) GetRoleByName(_ context.Context, _ string) (store.Role, error) {
+	return store.Role{}, sql.ErrNoRows
+}
+func (m *mockQuerier) ListRoles(_ context.Context) ([]store.Role, error) { return nil, nil }
+func (m *mockQuerier) DeleteRole(_ context.Context, _ uuid.UUID) error   { return nil }
+func (m *mockQuerier) AddPermission(_ context.Context, _ store.AddPermissionParams) (store.Permission, error) {
+	return store.Permission{}, nil
+}
+func (m *mockQuerier) ListPermissionsByRole(_ context.Context, _ uuid.UUID) ([]store.Permission, error) {
+	return nil, nil
+}
+func (m *mockQuerier) DeletePermission(_ context.Context, _ uuid.UUID) error { return nil }
+func (m *mockQuerier) AssignRoleToKey(_ context.Context, _ store.AssignRoleToKeyParams) error {
+	return nil
+}
+func (m *mockQuerier) RemoveRoleFromKey(_ context.Context, _ store.RemoveRoleFromKeyParams) error {
+	return nil
+}
+func (m *mockQuerier) ListRolesForKey(_ context.Context, _ uuid.UUID) ([]store.Role, error) {
+	return nil, nil
+}
+func (m *mockQuerier) GetPermissionsByKeyID(_ context.Context, _ uuid.UUID) ([]store.GetPermissionsByKeyIDRow, error) {
+	return nil, nil
+}
 
 // --- Async behavior tests ---
 

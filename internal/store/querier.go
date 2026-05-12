@@ -11,13 +11,24 @@ import (
 )
 
 type Querier interface {
+	AddPermission(ctx context.Context, arg AddPermissionParams) (Permission, error)
+	AssignRoleToKey(ctx context.Context, arg AssignRoleToKeyParams) error
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (ApiKey, error)
+	CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error)
 	DeleteAPIKey(ctx context.Context, id uuid.UUID) error
+	DeletePermission(ctx context.Context, id uuid.UUID) error
+	DeleteRole(ctx context.Context, id uuid.UUID) error
 	GetAPIKeyByHash(ctx context.Context, keyHash string) (ApiKey, error)
+	GetPermissionsByKeyID(ctx context.Context, apiKeyID uuid.UUID) ([]GetPermissionsByKeyIDRow, error)
 	GetRateLimitByKeyID(ctx context.Context, apiKeyID uuid.UUID) (GetRateLimitByKeyIDRow, error)
+	GetRoleByName(ctx context.Context, name string) (Role, error)
 	InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error
 	ListAPIKeys(ctx context.Context) ([]ListAPIKeysRow, error)
 	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error)
+	ListPermissionsByRole(ctx context.Context, roleID uuid.UUID) ([]Permission, error)
+	ListRoles(ctx context.Context) ([]Role, error)
+	ListRolesForKey(ctx context.Context, apiKeyID uuid.UUID) ([]Role, error)
+	RemoveRoleFromKey(ctx context.Context, arg RemoveRoleFromKeyParams) error
 	RevokeAPIKey(ctx context.Context, id uuid.UUID) error
 	UpsertRateLimit(ctx context.Context, arg UpsertRateLimitParams) (UpsertRateLimitRow, error)
 }

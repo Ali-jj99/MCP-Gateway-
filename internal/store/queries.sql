@@ -36,6 +36,54 @@ ON CONFLICT (api_key_id)
 DO UPDATE SET requests_per_min = EXCLUDED.requests_per_min, burst_size = EXCLUDED.burst_size
 RETURNING id, api_key_id, requests_per_min, burst_size;
 
+-- name: CreateRole :one
+INSERT INTO roles (name, description) VALUES ($1, $2)
+RETURNING id, name, description, created_at;
+
+-- name: GetRoleByName :one
+SELECT id, name, description, created_at
+FROM roles
+WHERE name = $1;
+
+-- name: ListRoles :many
+SELECT id, name, description, created_at
+FROM roles
+ORDER BY created_at;
+
+-- name: DeleteRole :exec
+DELETE FROM roles WHERE id = $1;
+
+-- name: AddPermission :one
+INSERT INTO permissions (role_id, resource, action) VALUES ($1, $2, $3)
+RETURNING id, role_id, resource, action;
+
+-- name: ListPermissionsByRole :many
+SELECT id, role_id, resource, action
+FROM permissions
+WHERE role_id = $1;
+
+-- name: DeletePermission :exec
+DELETE FROM permissions WHERE id = $1;
+
+-- name: AssignRoleToKey :exec
+INSERT INTO api_key_roles (api_key_id, role_id) VALUES ($1, $2)
+ON CONFLICT DO NOTHING;
+
+-- name: RemoveRoleFromKey :exec
+DELETE FROM api_key_roles WHERE api_key_id = $1 AND role_id = $2;
+
+-- name: ListRolesForKey :many
+SELECT r.id, r.name, r.description, r.created_at
+FROM roles r
+JOIN api_key_roles akr ON akr.role_id = r.id
+WHERE akr.api_key_id = $1;
+
+-- name: GetPermissionsByKeyID :many
+SELECT p.resource, p.action
+FROM permissions p
+JOIN api_key_roles akr ON akr.role_id = p.role_id
+WHERE akr.api_key_id = $1;
+
 -- name: ListAuditLogs :many
 SELECT id, api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name, created_at
 FROM audit_logs

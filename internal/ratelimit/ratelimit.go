@@ -32,12 +32,11 @@ var DefaultConfig = Config{
 }
 
 type bucket struct {
-	mu        sync.Mutex
-	tokens    float64
-	capacity  float64
-	rate      float64 // tokens per second
-	lastFill  time.Time
-	retryAt   time.Time
+	mu       sync.Mutex
+	tokens   float64
+	capacity float64
+	rate     float64 // tokens per second
+	lastFill time.Time
 }
 
 func (b *bucket) allow(now time.Time) (bool, time.Duration) {

@@ -13,6 +13,44 @@ import (
 	"github.com/google/uuid"
 )
 
+const addPermission = `-- name: AddPermission :one
+INSERT INTO permissions (role_id, resource, action) VALUES ($1, $2, $3)
+RETURNING id, role_id, resource, action
+`
+
+type AddPermissionParams struct {
+	RoleID   uuid.UUID `json:"role_id"`
+	Resource string    `json:"resource"`
+	Action   string    `json:"action"`
+}
+
+func (q *Queries) AddPermission(ctx context.Context, arg AddPermissionParams) (Permission, error) {
+	row := q.db.QueryRowContext(ctx, addPermission, arg.RoleID, arg.Resource, arg.Action)
+	var i Permission
+	err := row.Scan(
+		&i.ID,
+		&i.RoleID,
+		&i.Resource,
+		&i.Action,
+	)
+	return i, err
+}
+
+const assignRoleToKey = `-- name: AssignRoleToKey :exec
+INSERT INTO api_key_roles (api_key_id, role_id) VALUES ($1, $2)
+ON CONFLICT DO NOTHING
+`
+
+type AssignRoleToKeyParams struct {
+	ApiKeyID uuid.UUID `json:"api_key_id"`
+	RoleID   uuid.UUID `json:"role_id"`
+}
+
+func (q *Queries) AssignRoleToKey(ctx context.Context, arg AssignRoleToKeyParams) error {
+	_, err := q.db.ExecContext(ctx, assignRoleToKey, arg.ApiKeyID, arg.RoleID)
+	return err
+}
+
 const createAPIKey = `-- name: CreateAPIKey :one
 INSERT INTO api_keys (name, key_hash, key_prefix, expires_at)
 VALUES ($1, $2, $3, $4)
@@ -47,12 +85,52 @@ func (q *Queries) CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (Api
 	return i, err
 }
 
+const createRole = `-- name: CreateRole :one
+INSERT INTO roles (name, description) VALUES ($1, $2)
+RETURNING id, name, description, created_at
+`
+
+type CreateRoleParams struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
+	row := q.db.QueryRowContext(ctx, createRole, arg.Name, arg.Description)
+	var i Role
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const deleteAPIKey = `-- name: DeleteAPIKey :exec
 DELETE FROM api_keys WHERE id = $1
 `
 
 func (q *Queries) DeleteAPIKey(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteAPIKey, id)
+	return err
+}
+
+const deletePermission = `-- name: DeletePermission :exec
+DELETE FROM permissions WHERE id = $1
+`
+
+func (q *Queries) DeletePermission(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deletePermission, id)
+	return err
+}
+
+const deleteRole = `-- name: DeleteRole :exec
+DELETE FROM roles WHERE id = $1
+`
+
+func (q *Queries) DeleteRole(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteRole, id)
 	return err
 }
 
@@ -78,6 +156,41 @@ func (q *Queries) GetAPIKeyByHash(ctx context.Context, keyHash string) (ApiKey, 
 	return i, err
 }
 
+const getPermissionsByKeyID = `-- name: GetPermissionsByKeyID :many
+SELECT p.resource, p.action
+FROM permissions p
+JOIN api_key_roles akr ON akr.role_id = p.role_id
+WHERE akr.api_key_id = $1
+`
+
+type GetPermissionsByKeyIDRow struct {
+	Resource string `json:"resource"`
+	Action   string `json:"action"`
+}
+
+func (q *Queries) GetPermissionsByKeyID(ctx context.Context, apiKeyID uuid.UUID) ([]GetPermissionsByKeyIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPermissionsByKeyID, apiKeyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPermissionsByKeyIDRow
+	for rows.Next() {
+		var i GetPermissionsByKeyIDRow
+		if err := rows.Scan(&i.Resource, &i.Action); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRateLimitByKeyID = `-- name: GetRateLimitByKeyID :one
 SELECT id, api_key_id, requests_per_min, burst_size
 FROM rate_limits
@@ -99,6 +212,24 @@ func (q *Queries) GetRateLimitByKeyID(ctx context.Context, apiKeyID uuid.UUID) (
 		&i.ApiKeyID,
 		&i.RequestsPerMin,
 		&i.BurstSize,
+	)
+	return i, err
+}
+
+const getRoleByName = `-- name: GetRoleByName :one
+SELECT id, name, description, created_at
+FROM roles
+WHERE name = $1
+`
+
+func (q *Queries) GetRoleByName(ctx context.Context, name string) (Role, error) {
+	row := q.db.QueryRowContext(ctx, getRoleByName, name)
+	var i Role
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -258,6 +389,123 @@ func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const listPermissionsByRole = `-- name: ListPermissionsByRole :many
+SELECT id, role_id, resource, action
+FROM permissions
+WHERE role_id = $1
+`
+
+func (q *Queries) ListPermissionsByRole(ctx context.Context, roleID uuid.UUID) ([]Permission, error) {
+	rows, err := q.db.QueryContext(ctx, listPermissionsByRole, roleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Permission
+	for rows.Next() {
+		var i Permission
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoleID,
+			&i.Resource,
+			&i.Action,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRoles = `-- name: ListRoles :many
+SELECT id, name, description, created_at
+FROM roles
+ORDER BY created_at
+`
+
+func (q *Queries) ListRoles(ctx context.Context) ([]Role, error) {
+	rows, err := q.db.QueryContext(ctx, listRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRolesForKey = `-- name: ListRolesForKey :many
+SELECT r.id, r.name, r.description, r.created_at
+FROM roles r
+JOIN api_key_roles akr ON akr.role_id = r.id
+WHERE akr.api_key_id = $1
+`
+
+func (q *Queries) ListRolesForKey(ctx context.Context, apiKeyID uuid.UUID) ([]Role, error) {
+	rows, err := q.db.QueryContext(ctx, listRolesForKey, apiKeyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const removeRoleFromKey = `-- name: RemoveRoleFromKey :exec
+DELETE FROM api_key_roles WHERE api_key_id = $1 AND role_id = $2
+`
+
+type RemoveRoleFromKeyParams struct {
+	ApiKeyID uuid.UUID `json:"api_key_id"`
+	RoleID   uuid.UUID `json:"role_id"`
+}
+
+func (q *Queries) RemoveRoleFromKey(ctx context.Context, arg RemoveRoleFromKeyParams) error {
+	_, err := q.db.ExecContext(ctx, removeRoleFromKey, arg.ApiKeyID, arg.RoleID)
+	return err
 }
 
 const revokeAPIKey = `-- name: RevokeAPIKey :exec
