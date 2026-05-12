@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/Ali-jj99/mcp-gateway/internal/admin"
+	"github.com/Ali-jj99/mcp-gateway/internal/audit"
 	"github.com/Ali-jj99/mcp-gateway/internal/auth"
 	"github.com/Ali-jj99/mcp-gateway/internal/config"
 	"github.com/Ali-jj99/mcp-gateway/internal/database"
@@ -63,7 +64,10 @@ func main() {
 		q := store.New(db)
 		authService := auth.NewService(q)
 
-		r.With(authService.Middleware).Post("/mcp", proxyHandler.ServeHTTP)
+		auditLogger := audit.NewLogger(q, 4096)
+		defer auditLogger.Close()
+
+		r.With(authService.Middleware, auditLogger.Middleware).Post("/mcp", proxyHandler.ServeHTTP)
 	} else {
 		slog.Warn("DATABASE_URL not set, auth disabled, admin endpoints disabled")
 		r.Post("/mcp", proxyHandler.ServeHTTP)

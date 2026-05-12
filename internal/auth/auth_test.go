@@ -80,6 +80,14 @@ func (m *mockQuerier) RevokeAPIKey(_ context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (m *mockQuerier) InsertAuditLog(_ context.Context, _ store.InsertAuditLogParams) error {
+	return nil
+}
+
+func (m *mockQuerier) ListAuditLogs(_ context.Context, _ store.ListAuditLogsParams) ([]store.ListAuditLogsRow, error) {
+	return nil, nil
+}
+
 func (m *mockQuerier) setExpired(hash string) {
 	if k, ok := m.keys[hash]; ok {
 		t := time.Now().Add(-1 * time.Hour)

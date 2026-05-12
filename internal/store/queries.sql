@@ -19,3 +19,19 @@ WHERE id = $1;
 
 -- name: DeleteAPIKey :exec
 DELETE FROM api_keys WHERE id = $1;
+
+-- name: InsertAuditLog :exec
+INSERT INTO audit_logs (api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+
+-- name: ListAuditLogs :many
+SELECT id, api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name, created_at
+FROM audit_logs
+WHERE
+    (sqlc.narg('api_key_id')::UUID IS NULL OR api_key_id = sqlc.narg('api_key_id')::UUID) AND
+    (sqlc.narg('tool_name')::TEXT IS NULL OR tool_name = sqlc.narg('tool_name')::TEXT) AND
+    (sqlc.narg('status_code')::INT IS NULL OR status_code = sqlc.narg('status_code')::INT) AND
+    (sqlc.narg('start_time')::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg('start_time')::TIMESTAMPTZ) AND
+    (sqlc.narg('end_time')::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg('end_time')::TIMESTAMPTZ)
+ORDER BY created_at DESC
+LIMIT sqlc.arg('page_limit');

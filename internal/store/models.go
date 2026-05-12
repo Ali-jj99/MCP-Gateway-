@@ -29,14 +29,17 @@ type ApiKeyRole struct {
 }
 
 type AuditLog struct {
-	ID         uuid.UUID `json:"id"`
-	ApiKeyID   uuid.UUID `json:"api_key_id"`
-	Action     string    `json:"action"`
-	Resource   string    `json:"resource"`
-	StatusCode int32     `json:"status_code"`
-	LatencyMs  int64     `json:"latency_ms"`
-	Ip         string    `json:"ip"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID           uuid.UUID `json:"id"`
+	ApiKeyID     uuid.UUID `json:"api_key_id"`
+	Action       string    `json:"action"`
+	Resource     string    `json:"resource"`
+	StatusCode   int32     `json:"status_code"`
+	LatencyMs    int64     `json:"latency_ms"`
+	Ip           string    `json:"ip"`
+	CreatedAt    time.Time `json:"created_at"`
+	RequestBody  string    `json:"request_body"`
+	ResponseBody string    `json:"response_body"`
+	ToolName     string    `json:"tool_name"`
 }
 
 type Permission struct {

@@ -78,6 +78,38 @@ func (q *Queries) GetAPIKeyByHash(ctx context.Context, keyHash string) (ApiKey, 
 	return i, err
 }
 
+const insertAuditLog = `-- name: InsertAuditLog :exec
+INSERT INTO audit_logs (api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+`
+
+type InsertAuditLogParams struct {
+	ApiKeyID     uuid.UUID `json:"api_key_id"`
+	Action       string    `json:"action"`
+	Resource     string    `json:"resource"`
+	StatusCode   int32     `json:"status_code"`
+	LatencyMs    int64     `json:"latency_ms"`
+	Ip           string    `json:"ip"`
+	RequestBody  string    `json:"request_body"`
+	ResponseBody string    `json:"response_body"`
+	ToolName     string    `json:"tool_name"`
+}
+
+func (q *Queries) InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error {
+	_, err := q.db.ExecContext(ctx, insertAuditLog,
+		arg.ApiKeyID,
+		arg.Action,
+		arg.Resource,
+		arg.StatusCode,
+		arg.LatencyMs,
+		arg.Ip,
+		arg.RequestBody,
+		arg.ResponseBody,
+		arg.ToolName,
+	)
+	return err
+}
+
 const listAPIKeys = `-- name: ListAPIKeys :many
 SELECT id, name, key_prefix, expires_at, active, created_at, updated_at
 FROM api_keys
@@ -111,6 +143,84 @@ func (q *Queries) ListAPIKeys(ctx context.Context) ([]ListAPIKeysRow, error) {
 			&i.Active,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAuditLogs = `-- name: ListAuditLogs :many
+SELECT id, api_key_id, action, resource, status_code, latency_ms, ip, request_body, response_body, tool_name, created_at
+FROM audit_logs
+WHERE
+    ($1::UUID IS NULL OR api_key_id = $1::UUID) AND
+    ($2::TEXT IS NULL OR tool_name = $2::TEXT) AND
+    ($3::INT IS NULL OR status_code = $3::INT) AND
+    ($4::TIMESTAMPTZ IS NULL OR created_at >= $4::TIMESTAMPTZ) AND
+    ($5::TIMESTAMPTZ IS NULL OR created_at <= $5::TIMESTAMPTZ)
+ORDER BY created_at DESC
+LIMIT $6
+`
+
+type ListAuditLogsParams struct {
+	ApiKeyID   uuid.NullUUID  `json:"api_key_id"`
+	ToolName   sql.NullString `json:"tool_name"`
+	StatusCode sql.NullInt32  `json:"status_code"`
+	StartTime  sql.NullTime   `json:"start_time"`
+	EndTime    sql.NullTime   `json:"end_time"`
+	PageLimit  int32          `json:"page_limit"`
+}
+
+type ListAuditLogsRow struct {
+	ID           uuid.UUID `json:"id"`
+	ApiKeyID     uuid.UUID `json:"api_key_id"`
+	Action       string    `json:"action"`
+	Resource     string    `json:"resource"`
+	StatusCode   int32     `json:"status_code"`
+	LatencyMs    int64     `json:"latency_ms"`
+	Ip           string    `json:"ip"`
+	RequestBody  string    `json:"request_body"`
+	ResponseBody string    `json:"response_body"`
+	ToolName     string    `json:"tool_name"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAuditLogs,
+		arg.ApiKeyID,
+		arg.ToolName,
+		arg.StatusCode,
+		arg.StartTime,
+		arg.EndTime,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAuditLogsRow
+	for rows.Next() {
+		var i ListAuditLogsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ApiKeyID,
+			&i.Action,
+			&i.Resource,
+			&i.StatusCode,
+			&i.LatencyMs,
+			&i.Ip,
+			&i.RequestBody,
+			&i.ResponseBody,
+			&i.ToolName,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
