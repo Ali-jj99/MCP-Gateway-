@@ -14,6 +14,6 @@ COPY migrations/ /migrations/
 
 ENV MIGRATIONS_PATH=/migrations
 
-EXPOSE 8080
+EXPOSE 8080 9090
 
 ENTRYPOINT ["/gateway"]
