@@ -6,6 +6,7 @@ package store
 
 import (
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,6 +48,16 @@ type Permission struct {
 	RoleID   uuid.UUID `json:"role_id"`
 	Resource string    `json:"resource"`
 	Action   string    `json:"action"`
+}
+
+type Policy struct {
+	ID         uuid.UUID       `json:"id"`
+	Name       string          `json:"name"`
+	PolicyType string          `json:"policy_type"`
+	Enabled    bool            `json:"enabled"`
+	Config     json.RawMessage `json:"config"`
+	CreatedAt  time.Time       `json:"created_at"`
+	UpdatedAt  time.Time       `json:"updated_at"`
 }
 
 type RateLimit struct {

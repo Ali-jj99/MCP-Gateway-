@@ -8,6 +8,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -118,6 +119,39 @@ func (q *Queries) CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (Api
 	return i, err
 }
 
+const createPolicy = `-- name: CreatePolicy :one
+INSERT INTO policies (name, policy_type, enabled, config)
+VALUES ($1, $2, $3, $4)
+RETURNING id, name, policy_type, enabled, config, created_at, updated_at
+`
+
+type CreatePolicyParams struct {
+	Name       string          `json:"name"`
+	PolicyType string          `json:"policy_type"`
+	Enabled    bool            `json:"enabled"`
+	Config     json.RawMessage `json:"config"`
+}
+
+func (q *Queries) CreatePolicy(ctx context.Context, arg CreatePolicyParams) (Policy, error) {
+	row := q.db.QueryRowContext(ctx, createPolicy,
+		arg.Name,
+		arg.PolicyType,
+		arg.Enabled,
+		arg.Config,
+	)
+	var i Policy
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PolicyType,
+		&i.Enabled,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createRole = `-- name: CreateRole :one
 INSERT INTO roles (name, description) VALUES ($1, $2)
 RETURNING id, name, description, created_at
@@ -155,6 +189,15 @@ DELETE FROM permissions WHERE id = $1
 
 func (q *Queries) DeletePermission(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deletePermission, id)
+	return err
+}
+
+const deletePolicy = `-- name: DeletePolicy :exec
+DELETE FROM policies WHERE id = $1
+`
+
+func (q *Queries) DeletePolicy(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deletePolicy, id)
 	return err
 }
 
@@ -222,6 +265,27 @@ func (q *Queries) GetPermissionsByKeyID(ctx context.Context, apiKeyID uuid.UUID)
 		return nil, err
 	}
 	return items, nil
+}
+
+const getPolicy = `-- name: GetPolicy :one
+SELECT id, name, policy_type, enabled, config, created_at, updated_at
+FROM policies
+WHERE id = $1
+`
+
+func (q *Queries) GetPolicy(ctx context.Context, id uuid.UUID) (Policy, error) {
+	row := q.db.QueryRowContext(ctx, getPolicy, id)
+	var i Policy
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PolicyType,
+		&i.Enabled,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getRateLimitByKeyID = `-- name: GetRateLimitByKeyID :one
@@ -424,6 +488,44 @@ func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([
 	return items, nil
 }
 
+const listEnabledPolicies = `-- name: ListEnabledPolicies :many
+SELECT id, name, policy_type, enabled, config, created_at, updated_at
+FROM policies
+WHERE enabled = true
+ORDER BY created_at
+`
+
+func (q *Queries) ListEnabledPolicies(ctx context.Context) ([]Policy, error) {
+	rows, err := q.db.QueryContext(ctx, listEnabledPolicies)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Policy
+	for rows.Next() {
+		var i Policy
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.PolicyType,
+			&i.Enabled,
+			&i.Config,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPermissionsByRole = `-- name: ListPermissionsByRole :many
 SELECT id, role_id, resource, action
 FROM permissions
@@ -444,6 +546,43 @@ func (q *Queries) ListPermissionsByRole(ctx context.Context, roleID uuid.UUID) (
 			&i.RoleID,
 			&i.Resource,
 			&i.Action,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPolicies = `-- name: ListPolicies :many
+SELECT id, name, policy_type, enabled, config, created_at, updated_at
+FROM policies
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListPolicies(ctx context.Context) ([]Policy, error) {
+	rows, err := q.db.QueryContext(ctx, listPolicies)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Policy
+	for rows.Next() {
+		var i Policy
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.PolicyType,
+			&i.Enabled,
+			&i.Config,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -549,6 +688,52 @@ WHERE id = $1
 func (q *Queries) RevokeAPIKey(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, revokeAPIKey, id)
 	return err
+}
+
+const togglePolicy = `-- name: TogglePolicy :exec
+UPDATE policies SET enabled = NOT enabled, updated_at = NOW()
+WHERE id = $1
+`
+
+func (q *Queries) TogglePolicy(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, togglePolicy, id)
+	return err
+}
+
+const updatePolicy = `-- name: UpdatePolicy :one
+UPDATE policies
+SET name = $2, policy_type = $3, enabled = $4, config = $5, updated_at = NOW()
+WHERE id = $1
+RETURNING id, name, policy_type, enabled, config, created_at, updated_at
+`
+
+type UpdatePolicyParams struct {
+	ID         uuid.UUID       `json:"id"`
+	Name       string          `json:"name"`
+	PolicyType string          `json:"policy_type"`
+	Enabled    bool            `json:"enabled"`
+	Config     json.RawMessage `json:"config"`
+}
+
+func (q *Queries) UpdatePolicy(ctx context.Context, arg UpdatePolicyParams) (Policy, error) {
+	row := q.db.QueryRowContext(ctx, updatePolicy,
+		arg.ID,
+		arg.Name,
+		arg.PolicyType,
+		arg.Enabled,
+		arg.Config,
+	)
+	var i Policy
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.PolicyType,
+		&i.Enabled,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const upsertRateLimit = `-- name: UpsertRateLimit :one

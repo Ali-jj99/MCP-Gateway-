@@ -81,6 +81,19 @@ func (m *mockQuerier) GetRateLimitByKeyID(_ context.Context, _ uuid.UUID) (store
 func (m *mockQuerier) UpsertRateLimit(_ context.Context, _ store.UpsertRateLimitParams) (store.UpsertRateLimitRow, error) {
 	return store.UpsertRateLimitRow{}, nil
 }
+func (m *mockQuerier) CreatePolicy(_ context.Context, _ store.CreatePolicyParams) (store.Policy, error) {
+	return store.Policy{}, nil
+}
+func (m *mockQuerier) GetPolicy(_ context.Context, _ uuid.UUID) (store.Policy, error) {
+	return store.Policy{}, nil
+}
+func (m *mockQuerier) ListPolicies(_ context.Context) ([]store.Policy, error)        { return nil, nil }
+func (m *mockQuerier) ListEnabledPolicies(_ context.Context) ([]store.Policy, error) { return nil, nil }
+func (m *mockQuerier) UpdatePolicy(_ context.Context, _ store.UpdatePolicyParams) (store.Policy, error) {
+	return store.Policy{}, nil
+}
+func (m *mockQuerier) DeletePolicy(_ context.Context, _ uuid.UUID) error { return nil }
+func (m *mockQuerier) TogglePolicy(_ context.Context, _ uuid.UUID) error { return nil }
 
 func newTestServer() (*dashboard.Server, *mockQuerier) {
 	mock := newMock()

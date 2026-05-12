@@ -96,6 +96,19 @@ func (m *mockQuerier) GetPermissionsByKeyID(_ context.Context, _ uuid.UUID) ([]s
 func (m *mockQuerier) CountActiveKeys(_ context.Context) (int64, error)    { return 0, nil }
 func (m *mockQuerier) CountRequestsToday(_ context.Context) (int64, error) { return 0, nil }
 func (m *mockQuerier) CountErrorsToday(_ context.Context) (int64, error)   { return 0, nil }
+func (m *mockQuerier) CreatePolicy(_ context.Context, _ store.CreatePolicyParams) (store.Policy, error) {
+	return store.Policy{}, nil
+}
+func (m *mockQuerier) GetPolicy(_ context.Context, _ uuid.UUID) (store.Policy, error) {
+	return store.Policy{}, nil
+}
+func (m *mockQuerier) ListPolicies(_ context.Context) ([]store.Policy, error)        { return nil, nil }
+func (m *mockQuerier) ListEnabledPolicies(_ context.Context) ([]store.Policy, error) { return nil, nil }
+func (m *mockQuerier) UpdatePolicy(_ context.Context, _ store.UpdatePolicyParams) (store.Policy, error) {
+	return store.Policy{}, nil
+}
+func (m *mockQuerier) DeletePolicy(_ context.Context, _ uuid.UUID) error { return nil }
+func (m *mockQuerier) TogglePolicy(_ context.Context, _ uuid.UUID) error { return nil }
 
 // --- Async behavior tests ---
 

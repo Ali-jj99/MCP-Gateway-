@@ -104,3 +104,37 @@ WHERE
     (sqlc.narg('end_time')::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg('end_time')::TIMESTAMPTZ)
 ORDER BY created_at DESC
 LIMIT sqlc.arg('page_limit');
+
+-- name: CreatePolicy :one
+INSERT INTO policies (name, policy_type, enabled, config)
+VALUES ($1, $2, $3, $4)
+RETURNING id, name, policy_type, enabled, config, created_at, updated_at;
+
+-- name: GetPolicy :one
+SELECT id, name, policy_type, enabled, config, created_at, updated_at
+FROM policies
+WHERE id = $1;
+
+-- name: ListPolicies :many
+SELECT id, name, policy_type, enabled, config, created_at, updated_at
+FROM policies
+ORDER BY created_at DESC;
+
+-- name: ListEnabledPolicies :many
+SELECT id, name, policy_type, enabled, config, created_at, updated_at
+FROM policies
+WHERE enabled = true
+ORDER BY created_at;
+
+-- name: UpdatePolicy :one
+UPDATE policies
+SET name = $2, policy_type = $3, enabled = $4, config = $5, updated_at = NOW()
+WHERE id = $1
+RETURNING id, name, policy_type, enabled, config, created_at, updated_at;
+
+-- name: DeletePolicy :exec
+DELETE FROM policies WHERE id = $1;
+
+-- name: TogglePolicy :exec
+UPDATE policies SET enabled = NOT enabled, updated_at = NOW()
+WHERE id = $1;

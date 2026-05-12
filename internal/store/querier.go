@@ -17,22 +17,29 @@ type Querier interface {
 	CountErrorsToday(ctx context.Context) (int64, error)
 	CountRequestsToday(ctx context.Context) (int64, error)
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) (ApiKey, error)
+	CreatePolicy(ctx context.Context, arg CreatePolicyParams) (Policy, error)
 	CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error)
 	DeleteAPIKey(ctx context.Context, id uuid.UUID) error
 	DeletePermission(ctx context.Context, id uuid.UUID) error
+	DeletePolicy(ctx context.Context, id uuid.UUID) error
 	DeleteRole(ctx context.Context, id uuid.UUID) error
 	GetAPIKeyByHash(ctx context.Context, keyHash string) (ApiKey, error)
 	GetPermissionsByKeyID(ctx context.Context, apiKeyID uuid.UUID) ([]GetPermissionsByKeyIDRow, error)
+	GetPolicy(ctx context.Context, id uuid.UUID) (Policy, error)
 	GetRateLimitByKeyID(ctx context.Context, apiKeyID uuid.UUID) (GetRateLimitByKeyIDRow, error)
 	GetRoleByName(ctx context.Context, name string) (Role, error)
 	InsertAuditLog(ctx context.Context, arg InsertAuditLogParams) error
 	ListAPIKeys(ctx context.Context) ([]ListAPIKeysRow, error)
 	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error)
+	ListEnabledPolicies(ctx context.Context) ([]Policy, error)
 	ListPermissionsByRole(ctx context.Context, roleID uuid.UUID) ([]Permission, error)
+	ListPolicies(ctx context.Context) ([]Policy, error)
 	ListRoles(ctx context.Context) ([]Role, error)
 	ListRolesForKey(ctx context.Context, apiKeyID uuid.UUID) ([]Role, error)
 	RemoveRoleFromKey(ctx context.Context, arg RemoveRoleFromKeyParams) error
 	RevokeAPIKey(ctx context.Context, id uuid.UUID) error
+	TogglePolicy(ctx context.Context, id uuid.UUID) error
+	UpdatePolicy(ctx context.Context, arg UpdatePolicyParams) (Policy, error)
 	UpsertRateLimit(ctx context.Context, arg UpsertRateLimitParams) (UpsertRateLimitRow, error)
 }
 

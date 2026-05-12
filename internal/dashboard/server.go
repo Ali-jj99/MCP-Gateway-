@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -65,6 +66,11 @@ func (s *Server) routes() {
 		r.Delete("/dashboard/roles/{id}", s.handleDeleteRole)
 		r.Post("/dashboard/roles/{roleID}/permissions", s.handleAddPermission)
 		r.Delete("/dashboard/permissions/{id}", s.handleDeletePermission)
+
+		r.Get("/dashboard/policies", s.handlePolicies)
+		r.Post("/dashboard/policies", s.handleCreatePolicy)
+		r.Post("/dashboard/policies/{id}/toggle", s.handleTogglePolicy)
+		r.Delete("/dashboard/policies/{id}", s.handleDeletePolicy)
 	})
 }
 
@@ -315,4 +321,64 @@ func (s *Server) loadRolesWithPerms(r *http.Request) []RoleWithPerms {
 		result[i] = RoleWithPerms{Role: role, Permissions: perms}
 	}
 	return result
+}
+
+// --- Policy handlers ---
+
+func (s *Server) handlePolicies(w http.ResponseWriter, r *http.Request) {
+	policies, err := s.q.ListPolicies(r.Context())
+	if err != nil {
+		slog.Error("list policies failed", "error", err)
+		policies = nil
+	}
+	render(w, r, PoliciesPage(policies))
+}
+
+func (s *Server) handleCreatePolicy(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("name")
+	policyType := r.FormValue("policy_type")
+	configStr := r.FormValue("config")
+
+	var cfg json.RawMessage
+	if err := json.Unmarshal([]byte(configStr), &cfg); err != nil {
+		slog.Error("invalid policy config JSON", "error", err)
+		policies, _ := s.q.ListPolicies(r.Context())
+		render(w, r, PoliciesList(policies))
+		return
+	}
+
+	_, err := s.q.CreatePolicy(r.Context(), store.CreatePolicyParams{
+		Name:       name,
+		PolicyType: policyType,
+		Enabled:    true,
+		Config:     cfg,
+	})
+	if err != nil {
+		slog.Error("create policy failed", "error", err)
+	}
+
+	policies, _ := s.q.ListPolicies(r.Context())
+	render(w, r, PoliciesList(policies))
+}
+
+func (s *Server) handleTogglePolicy(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	_ = s.q.TogglePolicy(r.Context(), id)
+	policies, _ := s.q.ListPolicies(r.Context())
+	render(w, r, PoliciesList(policies))
+}
+
+func (s *Server) handleDeletePolicy(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	_ = s.q.DeletePolicy(r.Context(), id)
+	policies, _ := s.q.ListPolicies(r.Context())
+	render(w, r, PoliciesList(policies))
 }

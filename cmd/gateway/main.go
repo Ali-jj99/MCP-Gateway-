@@ -22,6 +22,7 @@ import (
 	"github.com/Ali-jj99/mcp-gateway/internal/health"
 	"github.com/Ali-jj99/mcp-gateway/internal/metrics"
 	"github.com/Ali-jj99/mcp-gateway/internal/middleware"
+	"github.com/Ali-jj99/mcp-gateway/internal/policy"
 	"github.com/Ali-jj99/mcp-gateway/internal/proxy"
 	"github.com/Ali-jj99/mcp-gateway/internal/ratelimit"
 	"github.com/Ali-jj99/mcp-gateway/internal/rbac"
@@ -90,6 +91,9 @@ func run() error {
 
 		rbacService := rbac.NewService(q)
 		mws = append(mws, rbacService.Middleware)
+
+		policyEngine := policy.NewEngine(q)
+		mws = append(mws, policyEngine.Middleware)
 
 		if cfg.AuditEnabled {
 			auditLogger := audit.NewLogger(q, 4096)
