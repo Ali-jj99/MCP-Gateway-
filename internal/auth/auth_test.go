@@ -392,7 +392,7 @@ func TestMiddleware_ExpiredKey(t *testing.T) {
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401, got %d", w.Code)
 	}
-	assertJSONRPCError(t, w, "expired API key")
+	assertJSONRPCError(t, w, "authentication failed")
 }
 
 func TestMiddleware_RevokedKey(t *testing.T) {
@@ -414,7 +414,7 @@ func TestMiddleware_RevokedKey(t *testing.T) {
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401, got %d", w.Code)
 	}
-	assertJSONRPCError(t, w, "revoked API key")
+	assertJSONRPCError(t, w, "authentication failed")
 }
 
 func assertJSONRPCError(t *testing.T, w *httptest.ResponseRecorder, expectedMsg string) {

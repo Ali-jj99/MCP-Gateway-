@@ -1,5 +1,13 @@
 # Examples
 
+## ai-agent-demo
+
+A Go script that simulates a real AI agent interacting with the gateway end-to-end: session init, tool discovery, tool calls, rate limiting, and auth rejection. See [`ai-agent-demo/README.md`](ai-agent-demo/README.md) for setup instructions.
+
+```bash
+DEMO_API_KEY="mcpgw_..." go run ./examples/ai-agent-demo
+```
+
 ## simple-mcp-server
 
 A reference MCP server implementing the [Model Context Protocol](https://modelcontextprotocol.io) over Streamable HTTP transport with JSON-RPC 2.0.

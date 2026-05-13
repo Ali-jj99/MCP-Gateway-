@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Ali-jj99/mcp-gateway/internal/proxy"
 )
@@ -96,7 +97,8 @@ func postJSON(t *testing.T, url string, body string, headers map[string]string) 
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,5 +272,17 @@ func TestProxyUpstreamDown(t *testing.T) {
 
 	if resp.StatusCode != http.StatusBadGateway {
 		t.Fatalf("expected 502, got %d", resp.StatusCode)
+	}
+}
+
+func TestProxyRejectsInvalidScheme(t *testing.T) {
+	_, err := proxy.NewHandler("ftp://example.com/mcp")
+	if err == nil {
+		t.Fatal("expected error for ftp scheme")
+	}
+
+	_, err = proxy.NewHandler("file:///etc/passwd")
+	if err == nil {
+		t.Fatal("expected error for file scheme")
 	}
 }

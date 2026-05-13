@@ -8,11 +8,14 @@ RUN CGO_ENABLED=0 go build -o /gateway ./cmd/gateway
 
 FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates && \
+    adduser -D -u 1001 appuser
 COPY --from=builder /gateway /gateway
 COPY migrations/ /migrations/
 
 ENV MIGRATIONS_PATH=/migrations
+
+USER appuser
 
 EXPOSE 8080 9090
 

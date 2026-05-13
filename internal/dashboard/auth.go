@@ -47,7 +47,8 @@ func setSessionCookie(w http.ResponseWriter, secret []byte, username string) err
 		Value:    tokenStr,
 		Path:     "/",
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 		MaxAge:   int(tokenTTL.Seconds()),
 	})
 	return nil

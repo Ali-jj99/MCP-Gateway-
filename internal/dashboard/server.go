@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -98,7 +99,9 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	if username != s.adminUser || password != s.adminPass {
+	usernameMatch := subtle.ConstantTimeCompare([]byte(username), []byte(s.adminUser))
+	passwordMatch := subtle.ConstantTimeCompare([]byte(password), []byte(s.adminPass))
+	if usernameMatch&passwordMatch != 1 {
 		render(w, r, LoginPage("Invalid username or password"))
 		return
 	}

@@ -21,7 +21,7 @@ func TestMiddleware_RecordsMetrics(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 
-	count := testutil.ToFloat64(RequestsTotal.WithLabelValues("POST", "/mcp", "200"))
+	count := testutil.ToFloat64(RequestsTotal.WithLabelValues("POST", "unknown", "200"))
 	if count != 1 {
 		t.Fatalf("expected request count 1, got %f", count)
 	}
@@ -36,7 +36,7 @@ func TestMiddleware_RecordsErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
 
-	count := testutil.ToFloat64(ErrorsTotal.WithLabelValues("POST", "/mcp", "500"))
+	count := testutil.ToFloat64(ErrorsTotal.WithLabelValues("POST", "unknown", "500"))
 	if count != 1 {
 		t.Fatalf("expected error count 1, got %f", count)
 	}

@@ -36,8 +36,7 @@ func (s *Service) Middleware(next http.Handler) http.Handler {
 		key, err := s.ValidateKey(r.Context(), token)
 		if err != nil {
 			slog.Warn("auth failed", "error", err, "prefix", DisplayPrefix(token))
-			code := http.StatusUnauthorized
-			writeAuthError(w, code, err.Error())
+			writeAuthError(w, http.StatusUnauthorized, "authentication failed")
 			return
 		}
 

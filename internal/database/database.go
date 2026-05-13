@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -22,6 +23,8 @@ func Connect(databaseURL string) (*sql.DB, error) {
 	}
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(1 * time.Minute)
 	return db, nil
 }
 

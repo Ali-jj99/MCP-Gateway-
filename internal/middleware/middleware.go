@@ -23,10 +23,12 @@ func Chain(h http.Handler, mws ...Middleware) http.Handler {
 	return h
 }
 
+const maxRequestIDLen = 128
+
 func RequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := r.Header.Get("X-Request-ID")
-		if id == "" {
+		if id == "" || len(id) > maxRequestIDLen {
 			id = uuid.NewString()
 		}
 		ctx := context.WithValue(r.Context(), RequestIDKey, id)

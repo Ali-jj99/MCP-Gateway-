@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -54,7 +55,10 @@ func Middleware(next http.Handler) http.Handler {
 
 		duration := time.Since(start).Seconds()
 		status := strconv.Itoa(sw.status)
-		path := r.URL.Path
+		path := "unknown"
+		if rctx := chi.RouteContext(r.Context()); rctx != nil && rctx.RoutePattern() != "" {
+			path = rctx.RoutePattern()
+		}
 
 		RequestsTotal.WithLabelValues(r.Method, path, status).Inc()
 		RequestDuration.WithLabelValues(r.Method, path).Observe(duration)
