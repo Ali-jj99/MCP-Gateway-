@@ -106,7 +106,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := setSessionCookie(w, s.jwtSecret, username); err != nil {
+	if err := setSessionCookie(w, r, s.jwtSecret, username); err != nil {
 		render(w, r, LoginPage("Internal error"))
 		return
 	}

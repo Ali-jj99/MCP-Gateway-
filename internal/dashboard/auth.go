@@ -37,18 +37,19 @@ func validateToken(secret []byte, tokenStr string) (string, bool) {
 	return sub, sub != ""
 }
 
-func setSessionCookie(w http.ResponseWriter, secret []byte, username string) error {
+func setSessionCookie(w http.ResponseWriter, r *http.Request, secret []byte, username string) error {
 	tokenStr, err := createToken(secret, username)
 	if err != nil {
 		return err
 	}
+	secure := r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieName,
 		Value:    tokenStr,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(tokenTTL.Seconds()),
 	})
 	return nil
