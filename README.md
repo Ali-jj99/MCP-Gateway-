@@ -7,7 +7,7 @@
 I built this because MCP servers have no built-in access control. Any agent
 with the URL can call any tool with no limits. This gateway sits in front of
 MCP servers and adds API key auth, role-based permissions, per-key rate
-limiting, and full audit logging -- all without touching the MCP servers
+limiting, and full audit logging, all without touching the MCP servers
 themselves.
 
 ![Dashboard](docs/screenshots/dashboard.png)
@@ -47,9 +47,11 @@ Agent --> Gateway (:8080/mcp) --> Upstream MCP Server
      (keys, roles, audit, rate limits)
 ```
 
-Three binaries: `gateway` (reverse proxy), `dashboard` (admin web UI),
-`keygen` (CLI key generator). Gateway and dashboard share a database but run
-independently. See [ARCHITECTURE.md](ARCHITECTURE.md) for internals.
+I split the project into three binaries. The `gateway` is the reverse proxy
+that handles MCP traffic. The `dashboard` is an admin web UI for managing keys,
+roles, and viewing audit logs. The `keygen` is a small CLI for creating API
+keys. Gateway and dashboard share a database but run as independent processes.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for internals.
 
 ## Screenshots
 
@@ -66,7 +68,7 @@ All config is via environment variables.
 | Variable | Default | Description |
 |---|---|---|
 | `UPSTREAM_URL` | *(required)* | Upstream MCP server URL |
-| `DATABASE_URL` | *(empty)* | PostgreSQL connection string; auth disabled when unset |
+| `DATABASE_URL` | *(empty)* | PostgreSQL connection string. Auth disabled when unset |
 | `PORT` | `8080` | Listen port |
 | `LOG_LEVEL` | `info` | `debug` / `info` / `warn` / `error` |
 | `LOG_FORMAT` | `json` | `json` or `text` |
@@ -112,4 +114,4 @@ See [docs/USAGE.md](docs/USAGE.md) for API endpoints, metrics, and audit log que
 
 ## License
 
-MIT -- see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

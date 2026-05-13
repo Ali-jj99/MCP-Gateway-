@@ -2,7 +2,10 @@
 
 ## ai-agent-demo
 
-A Go script that simulates a real AI agent interacting with the gateway end-to-end: session init, tool discovery, tool calls, rate limiting, and auth rejection. See [`ai-agent-demo/README.md`](ai-agent-demo/README.md) for setup instructions.
+I wrote this to simulate a real AI agent talking to the gateway end-to-end.
+It walks through session init, tool discovery, tool calls, rate limiting, and
+auth rejection. See [`ai-agent-demo/README.md`](ai-agent-demo/README.md) for
+setup instructions.
 
 ```bash
 DEMO_API_KEY="mcpgw_..." go run ./examples/ai-agent-demo
@@ -10,23 +13,17 @@ DEMO_API_KEY="mcpgw_..." go run ./examples/ai-agent-demo
 
 ## simple-mcp-server
 
-A reference MCP server implementing the [Model Context Protocol](https://modelcontextprotocol.io) over Streamable HTTP transport with JSON-RPC 2.0.
-
-### Tools
-
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `echo` | Returns the message you send | `message` (string, required) |
-| `get_time` | Returns the current server time | none |
-| `add` | Adds two numbers | `a`, `b` (number, required) |
-
-### Running
+A reference MCP server I built for testing. It implements the
+[Model Context Protocol](https://modelcontextprotocol.io) over Streamable HTTP
+transport with JSON-RPC 2.0 and exposes three tools: `echo` returns the message
+you send, `get_time` returns the current server time, and `add` adds two
+numbers.
 
 ```bash
-# From the repo root
+# from the repo root
 go run ./examples/simple-mcp-server
 
-# Or with a custom port
+# or with a custom port
 PORT=3000 go run ./examples/simple-mcp-server
 ```
 
@@ -34,7 +31,7 @@ The server listens on port 9090 by default at `POST /mcp`.
 
 ### Usage
 
-**1. Initialize the session:**
+Initialize the session first:
 
 ```bash
 curl -s -D- http://localhost:9090/mcp \
@@ -52,9 +49,10 @@ curl -s -D- http://localhost:9090/mcp \
   }'
 ```
 
-Note the `Mcp-Session-Id` header in the response — include it in all subsequent requests.
+Note the `Mcp-Session-Id` header in the response. Include it in all subsequent
+requests.
 
-**2. Send the initialized notification:**
+Send the initialized notification:
 
 ```bash
 curl -s http://localhost:9090/mcp \
@@ -63,7 +61,7 @@ curl -s http://localhost:9090/mcp \
   -d '{"jsonrpc": "2.0", "method": "notifications/initialized"}'
 ```
 
-**3. List tools:**
+List available tools:
 
 ```bash
 curl -s http://localhost:9090/mcp \
@@ -73,7 +71,7 @@ curl -s http://localhost:9090/mcp \
   -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}'
 ```
 
-**4. Call a tool:**
+Call a tool:
 
 ```bash
 curl -s http://localhost:9090/mcp \
